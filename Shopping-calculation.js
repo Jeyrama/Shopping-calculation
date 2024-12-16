@@ -121,3 +121,56 @@ function shoppingCalculation(input) {
 }
 
 // or
+
+function shoppingCalculation(input) {
+  const prices = {}
+  const people = {}
+  const buys = []
+  
+  for (let command of input) {
+    let [name, operator, price] = command.split(" ")
+    if (operator === 'is') {
+      prices[name.toLowerCase()] = cleanPrice(price)
+    }
+    else if (operator === 'has') {
+      people[name] = {money:  cleanPrice(price), products: [] }
+    }
+    else {
+      buys.push(command)
+    }
+  }
+  
+  for (let command of buys) {
+    let [name, operator, amount, product] = command.split(" ")
+    const clean_product = cleanProduct(product)
+    const cost = prices[ clean_product ] * amount
+    people[name].money -= cost
+    const product_str = amount > 1 ? `${amount} ${clean_product}s` : `${amount} ${clean_product}` 
+    people[name].products = [...people[name].products, product_str]
+  }
+  
+  const result = []
+  
+  for (let name in people) {
+    result.push( 
+      [ name, `$${people[name].money}`, people[name].products.join(", ") ]
+    )
+  }
+  
+  
+  return result
+}
+
+const cleanPrice = (price) => {
+  return +price.substring(1, price.length - 1)
+}
+
+const cleanProduct = (str) => {
+  if (str[str.length-1] == '.')
+    str = str.substring(0, str.length - 1)
+  
+  if (str[str.length-1] == 's')
+    str = str.substring(0, str.length - 1)
+  
+  return str
+}
