@@ -60,3 +60,62 @@ Notes:
 
 
 //Solution
+
+const removeLast = str => str.slice(0, str.length - 1);
+
+const parse = (line) => {
+  const input = removeLast(line);
+  const [product, price] = input.split(" is $");
+  if (price !== undefined) {
+    return { product: product.toLowerCase(), price };
+  }
+  
+  const [person, budget] = input.split(" has $");
+  if (budget !== undefined) {
+    return {person, budget };
+  }
+  
+  const [name, purchase] = input.split(" buys ");
+  if (purchase !== undefined) {
+    return {person: name, purchase};
+  }
+}
+
+function shoppingCalculation(input) {
+  const productsMap = new Map();
+  const personMap = new Map();
+  
+  input.forEach(line => {
+    const res = parse(line);
+    if (res.product) {
+      productsMap.set(res.product, res.price);
+    } else if (res.person) {
+      if (!personMap.has(res.person)) {
+        personMap.set(res.person, {has: 0, purchases: []});
+      }
+      const person = personMap.get(res.person);
+      if (res.budget !== undefined) {
+        personMap.set(res.person, {...person, has: res.budget });
+      } else if (res.purchase) {
+        const [amount, thing] = res.purchase.split(' ');
+        person.purchases.push({amount, thing: amount === '1' ? thing : removeLast(thing)});
+      }
+    }
+  });
+  
+  return [...personMap].map(
+    ([person, {has, purchases}]) => {
+         const moneyLeft = purchases.reduce(
+           (acc, cur) => acc - productsMap.get(cur.thing) * cur.amount,
+           has
+         ); 
+      return [person, 
+              '$' + moneyLeft,
+              purchases
+              .map(({thing, amount}) => 
+                   `${amount} ${thing}${amount > 1 ? 's' : ''}`
+              ).join(', ')
+             ];
+    }  
+  )
+}
